@@ -19,7 +19,7 @@ COPY scraper.py ingest.py chain.py server.py entrypoint.sh ./
 RUN chmod +x entrypoint.sh
 
 # Default env vars — work for both Railway (single container) and local override via docker-compose
-ENV OLLAMA_BASE_URL=http://localhost:11434
+ENV OLLAMA_BASE_URL=http://ollama.railway.internal:11434
 ENV EMBEDDING_MODEL=nomic-embed-text
 
 EXPOSE 8000
