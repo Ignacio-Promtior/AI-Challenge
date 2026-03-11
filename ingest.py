@@ -9,6 +9,8 @@ import json
 import os
 from pathlib import Path
 
+os.environ.setdefault("ANONYMIZED_TELEMETRY", "false")
+
 # When running inside Docker, Ollama is a separate service on the same network.
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 # Use a dedicated embedding model — much faster than llama2 for this task.

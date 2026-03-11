@@ -5,8 +5,9 @@ Builds the RAG chain used by the LangServe server.
 
 import os
 
-from langchain_ollama import OllamaEmbeddings
-from langchain_community.llms import Ollama
+os.environ.setdefault("ANONYMIZED_TELEMETRY", "false")
+
+from langchain_ollama import OllamaEmbeddings, OllamaLLM
 from langchain_chroma import Chroma
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
@@ -64,7 +65,7 @@ def create_rag_chain():
         template=PROMPT_TEMPLATE,
     )
 
-    llm = Ollama(model=OLLAMA_MODEL, base_url=OLLAMA_BASE_URL, temperature=0)
+    llm = OllamaLLM(model=OLLAMA_MODEL, base_url=OLLAMA_BASE_URL, temperature=0)
 
     chain = (
         {"context": retriever | format_docs, "question": RunnablePassthrough()}
