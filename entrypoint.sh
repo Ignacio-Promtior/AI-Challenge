@@ -8,28 +8,27 @@ EMBEDDING_MODEL="nomic-embed-text"
 echo "=== Promtior RAG Chatbot entrypoint ==="
 echo "Ollama URL: $OLLAMA_BASE_URL"
 
-# ── 1. Start Ollama if it's not already running (single-container mode) ─────
-if ! curl -sf "${OLLAMA_BASE_URL}/api/tags" -o /dev/null 2>&1; then
-    echo "Starting Ollama server in background..."
-    ollama serve &
-fi
+# ── 1. Start the API server immediately so Railway healthcheck passes ────────
+echo "Starting API server in background..."
+python server.py &
+SERVER_PID=$!
 
-# ── 2. Wait for Ollama to be ready ─────────────────────────────────────────
+# ── 2. Wait for Ollama to be ready ──────────────────────────────────────────
 echo "Waiting for Ollama to be ready..."
-for i in $(seq 1 30); do
+for i in $(seq 1 60); do
     if curl -sf "${OLLAMA_BASE_URL}/api/tags" -o /dev/null 2>&1; then
         echo "Ollama is ready."
         break
     fi
-    echo "  Attempt $i/30 — Ollama not ready yet, retrying in 5 s..."
+    echo "  Attempt $i/60 — Ollama not ready yet, retrying in 5 s..."
     sleep 5
-    if [ "$i" -eq 30 ]; then
+    if [ "$i" -eq 60 ]; then
         echo "ERROR: Ollama did not become available in time. Exiting."
         exit 1
     fi
 done
 
-# ── 2. Pull required models if not already present ─────────────────────────
+# ── 3. Pull required models if not already present ──────────────────────────
 for PULL_MODEL in "${MODEL}" "${EMBEDDING_MODEL}"; do
     echo "Checking if model '${PULL_MODEL}' is available..."
     if curl -sf "${OLLAMA_BASE_URL}/api/tags" | grep -q "\"${PULL_MODEL}\""; then
@@ -43,7 +42,7 @@ for PULL_MODEL in "${MODEL}" "${EMBEDDING_MODEL}"; do
     fi
 done
 
-# ── 3. Scrape website if data not yet collected ─────────────────────────────
+# ── 4. Scrape website if data not yet collected ──────────────────────────────
 if [ ! -f "/app/data/scraped_content.json" ]; then
     echo "No scraped data found. Running scraper..."
     python scraper.py
@@ -51,7 +50,7 @@ else
     echo "Scraped data already exists, skipping scraper."
 fi
 
-# ── 4. Build vector store if it does not exist ─────────────────────────────
+# ── 5. Build vector store if it does not exist ──────────────────────────────
 if [ ! -d "/app/vectorstore" ] || [ -z "$(ls -A /app/vectorstore 2>/dev/null)" ]; then
     echo "Vector store not found. Running ingest..."
     python ingest.py
@@ -59,6 +58,7 @@ else
     echo "Vector store already exists, skipping ingestion."
 fi
 
-# ── 5. Start the LangServe API server ──────────────────────────────────────
-echo "Starting LangServe server on port 8000..."
-exec python server.py
+echo "Setup complete. Chatbot is fully operational."
+
+# ── 6. Keep container alive waiting on the server process ───────────────────
+wait $SERVER_PID

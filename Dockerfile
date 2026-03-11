@@ -4,11 +4,7 @@ FROM python:3.11-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
-    zstd \
     && rm -rf /var/lib/apt/lists/*
-
-# Install Ollama using the official install script
-RUN curl -fsSL https://ollama.com/install.sh | sh
 
 WORKDIR /app
 
