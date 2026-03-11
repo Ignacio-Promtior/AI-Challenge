@@ -12,7 +12,8 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 
-VECTORSTORE_DIR = "./vectorstore"
+STORAGE_DIR = os.environ.get("STORAGE_DIR", ".")  # Railway: /app/storage, local: .
+VECTORSTORE_DIR = os.path.join(STORAGE_DIR, "vectorstore")
 OLLAMA_MODEL = "llama2"
 EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "nomic-embed-text")
 # When running inside Docker, Ollama is a separate service on the same network.

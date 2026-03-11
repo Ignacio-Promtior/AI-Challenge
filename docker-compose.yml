@@ -32,12 +32,12 @@ services:
       - "8000:8000"
     volumes:
       # Persist scraped data and vector store between container restarts
-      - ./data:/app/data
-      - ./vectorstore:/app/vectorstore
+      - ./storage:/app/storage
     environment:
       # Points the app to the Ollama service inside the Docker network
       - OLLAMA_BASE_URL=http://ollama:11434
       - EMBEDDING_MODEL=nomic-embed-text
+      - STORAGE_DIR=/app/storage
     depends_on:
       - ollama
 
