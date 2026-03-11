@@ -8,7 +8,13 @@ EMBEDDING_MODEL="nomic-embed-text"
 echo "=== Promtior RAG Chatbot entrypoint ==="
 echo "Ollama URL: $OLLAMA_BASE_URL"
 
-# ── 1. Wait for Ollama to be ready ─────────────────────────────────────────
+# ── 1. Start Ollama if it's not already running (single-container mode) ─────
+if ! curl -sf "${OLLAMA_BASE_URL}/api/tags" -o /dev/null 2>&1; then
+    echo "Starting Ollama server in background..."
+    ollama serve &
+fi
+
+# ── 2. Wait for Ollama to be ready ─────────────────────────────────────────
 echo "Waiting for Ollama to be ready..."
 for i in $(seq 1 30); do
     if curl -sf "${OLLAMA_BASE_URL}/api/tags" -o /dev/null 2>&1; then
