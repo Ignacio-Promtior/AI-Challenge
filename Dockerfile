@@ -18,9 +18,6 @@ COPY scraper.py ingest.py chain.py server.py entrypoint.sh ./
 # Make entrypoint executable
 RUN chmod +x entrypoint.sh
 
-# Persistent volumes will be mounted here at runtime
-VOLUME ["/app/data", "/app/vectorstore"]
-
 EXPOSE 8000
 
 ENTRYPOINT ["./entrypoint.sh"]
