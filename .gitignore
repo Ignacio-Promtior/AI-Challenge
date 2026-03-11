@@ -178,7 +178,6 @@ cython_debug/
 # Generated at runtime — do not commit
 data/scraped_content.json
 vectorstore/
-storage/
 
 # Abstra
 # Abstra is an AI-powered process automation framework.

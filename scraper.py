@@ -12,8 +12,7 @@ import os
 import time
 
 BASE_URL = "https://www.promtior.ai"
-STORAGE_DIR = os.environ.get("STORAGE_DIR", ".")  # Railway: /app/storage, local: .
-OUTPUT_FILE = os.path.join(STORAGE_DIR, "data", "scraped_content.json")
+OUTPUT_FILE = "data/scraped_content.json"
 MAX_PAGES = 30
 REQUEST_DELAY = 1.0  # seconds between requests
 
@@ -78,7 +77,7 @@ def scrape_website(base_url: str = BASE_URL, max_pages: int = MAX_PAGES) -> list
 
 
 def main():
-    os.makedirs(os.path.join(STORAGE_DIR, "data"), exist_ok=True)
+    os.makedirs("data", exist_ok=True)
     print(f"Starting scrape of {BASE_URL} (max {MAX_PAGES} pages)...")
     data = scrape_website()
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:

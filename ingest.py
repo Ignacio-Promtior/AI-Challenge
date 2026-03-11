@@ -19,10 +19,9 @@ from langchain_ollama import OllamaEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
 
-STORAGE_DIR = os.environ.get("STORAGE_DIR", ".")  # Railway: /app/storage, local: .
-SCRAPED_FILE = os.path.join(STORAGE_DIR, "data", "scraped_content.json")
-PDF_FILE = os.path.join(STORAGE_DIR, "data", "presentation.pdf")  # optional
-VECTORSTORE_DIR = os.path.join(STORAGE_DIR, "vectorstore")
+SCRAPED_FILE = "data/scraped_content.json"
+PDF_FILE = "data/presentation.pdf"   # optional – place the Promtior PDF here
+VECTORSTORE_DIR = "./vectorstore"
 OLLAMA_MODEL = "llama2"  # used for embeddings; switch to nomic-embed-text if available
 
 

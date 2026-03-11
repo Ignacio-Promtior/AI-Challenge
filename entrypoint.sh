@@ -38,8 +38,7 @@ for PULL_MODEL in "${MODEL}" "${EMBEDDING_MODEL}"; do
 done
 
 # ── 3. Scrape website if data not yet collected ─────────────────────────────
-STORAGE_DIR="${STORAGE_DIR:-/app}"
-if [ ! -f "${STORAGE_DIR}/data/scraped_content.json" ]; then
+if [ ! -f "/app/data/scraped_content.json" ]; then
     echo "No scraped data found. Running scraper..."
     python scraper.py
 else
@@ -47,7 +46,7 @@ else
 fi
 
 # ── 4. Build vector store if it does not exist ─────────────────────────────
-if [ ! -d "${STORAGE_DIR}/vectorstore" ] || [ -z "$(ls -A ${STORAGE_DIR}/vectorstore 2>/dev/null)" ]; then
+if [ ! -d "/app/vectorstore" ] || [ -z "$(ls -A /app/vectorstore 2>/dev/null)" ]; then
     echo "Vector store not found. Running ingest..."
     python ingest.py
 else
