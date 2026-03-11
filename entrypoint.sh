@@ -62,7 +62,11 @@ else
     echo "Vector store already exists, skipping ingestion."
 fi
 
-echo "Setup complete. Chatbot is fully operational."
+echo "Setup complete. Restarting server with populated vector store..."
 
-# ── 6. Keep container alive waiting on the server process ───────────────────
-wait $SERVER_PID
+# ── 6. Kill background server, then restart in foreground with data ready ────
+kill "$SERVER_PID" 2>/dev/null || true
+wait "$SERVER_PID" 2>/dev/null || true
+
+echo "Starting API server in foreground..."
+exec python server.py

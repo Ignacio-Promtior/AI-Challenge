@@ -16,7 +16,7 @@ EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "nomic-embed-text")
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_ollama import OllamaEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain_core.documents import Document
 
 SCRAPED_FILE = "data/scraped_content.json"
@@ -95,8 +95,6 @@ def ingest():
         embedding=embeddings,
         persist_directory=VECTORSTORE_DIR,
     )
-    vectorstore.persist()
-
     print(f"\nVector store saved to '{VECTORSTORE_DIR}'. Ingestion complete.")
 
 
