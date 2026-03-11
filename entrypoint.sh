@@ -44,8 +44,17 @@ done
 
 # ── 4. Scrape website if data not yet collected ──────────────────────────────
 NEED_INGEST=false
-# Re-scrape if file missing OR if it contains 0 pages (empty array)
-if [ ! -f "/app/data/scraped_content.json" ] || [ "$(cat /app/data/scraped_content.json)" = "[]" ]; then
+# Re-scrape if file missing, empty array, or contains binary/corrupt content
+SCRAPE_FILE="/app/data/scraped_content.json"
+if [ ! -f "$SCRAPE_FILE" ] || [ "$(cat "$SCRAPE_FILE")" = "[]" ] || ! python3 -c "
+import json, sys
+data = json.load(open('$SCRAPE_FILE'))
+if not data: sys.exit(1)
+content = data[0].get('content','')
+# Fail if more than 5% of characters are non-printable (binary garbage)
+non_print = sum(1 for c in content if ord(c) < 32 and c not in '\n\r\t')
+if non_print / max(len(content),1) > 0.05: sys.exit(1)
+" 2>/dev/null; then
     echo "No scraped data found. Running scraper..."
     python scraper.py
     NEED_INGEST=true  # fresh scrape → must rebuild vectorstore
