@@ -8,6 +8,7 @@ Playground UI: http://localhost:8000/chat/playground
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from langserve import add_routes
+import os
 
 from chain import create_rag_chain
 
@@ -52,7 +53,8 @@ async def root():
 if __name__ == "__main__":
     import uvicorn
 
+    port = int(os.environ.get("PORT", 8000))
     print("Starting Promtior RAG Chatbot server...")
-    print("  Playground → http://localhost:8000/chat/playground")
-    print("  API docs   → http://localhost:8000/docs")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    print(f"  Playground → http://localhost:{port}/chat/playground")
+    print(f"  API docs   → http://localhost:{port}/docs")
+    uvicorn.run(app, host="0.0.0.0", port=port)
