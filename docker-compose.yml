@@ -1,0 +1,46 @@
+services:
+
+  # ─── Ollama LLM server ──────────────────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: promtior_ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    # ── GPU support (NVIDIA) ─────────────────────────────────────────────────
+    # Uncomment the block below if you have an NVIDIA GPU and the
+    # NVIDIA Container Toolkit installed (recommended for speed):
+    #
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  # ─── RAG Chatbot application ────────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: promtior_app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist scraped data and vector store between container restarts
+      - ./data:/app/data
+      - ./vectorstore:/app/vectorstore
+    environment:
+      # Points the app to the Ollama service inside the Docker network
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - EMBEDDING_MODEL=nomic-embed-text
+    depends_on:
+      - ollama
+
+volumes:
+  ollama_data:
+    # Stores downloaded Ollama models so they are not re-downloaded on restart
