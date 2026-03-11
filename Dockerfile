@@ -6,9 +6,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Ollama binary directly (no systemd needed inside a container)
-RUN curl -L https://ollama.com/download/ollama-linux-amd64 -o /usr/local/bin/ollama \
-    && chmod +x /usr/local/bin/ollama
+# Install Ollama using the official install script
+RUN curl -fsSL https://ollama.com/install.sh | sh
 
 WORKDIR /app
 
