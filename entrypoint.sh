@@ -43,16 +43,20 @@ for PULL_MODEL in "${MODEL}" "${EMBEDDING_MODEL}"; do
 done
 
 # ── 4. Scrape website if data not yet collected ──────────────────────────────
-if [ ! -f "/app/data/scraped_content.json" ]; then
+NEED_INGEST=false
+# Re-scrape if file missing OR if it contains 0 pages (empty array)
+if [ ! -f "/app/data/scraped_content.json" ] || [ "$(cat /app/data/scraped_content.json)" = "[]" ]; then
     echo "No scraped data found. Running scraper..."
     python scraper.py
+    NEED_INGEST=true  # fresh scrape → must rebuild vectorstore
 else
     echo "Scraped data already exists, skipping scraper."
 fi
 
-# ── 5. Build vector store if it does not exist ──────────────────────────────
-if [ ! -d "/app/vectorstore" ] || [ -z "$(ls -A /app/vectorstore 2>/dev/null)" ]; then
-    echo "Vector store not found. Running ingest..."
+# ── 5. Build vector store if it does not exist or data was just scraped ──────
+if [ "$NEED_INGEST" = "true" ] || [ ! -d "/app/vectorstore" ] || [ -z "$(ls -A /app/vectorstore 2>/dev/null)" ]; then
+    echo "Building vector store..."
+    rm -rf /app/vectorstore  # ensure clean rebuild
     python ingest.py
 else
     echo "Vector store already exists, skipping ingestion."
