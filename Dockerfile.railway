@@ -15,9 +15,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY scraper.py ingest.py chain.py server.py entrypoint.railway.sh ./
 RUN chmod +x entrypoint.railway.sh
 
-# Bake PDF into image so entrypoint can copy it into the volume on first run
-COPY data/presentation.pdf /app/presentation.pdf
-
 EXPOSE 8000
 
 ENTRYPOINT ["./entrypoint.railway.sh"]

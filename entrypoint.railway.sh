@@ -19,12 +19,6 @@ echo "  STORAGE_DIR     : $STORAGE_DIR"
 # Create storage subdirs inside the mounted volume
 mkdir -p "${STORAGE_DIR}/data" "${STORAGE_DIR}/vectorstore"
 
-# Copy baked-in PDF to volume on first run
-if [ ! -f "${STORAGE_DIR}/data/presentation.pdf" ] && [ -f "/app/presentation.pdf" ]; then
-    echo "Copying presentation.pdf to storage..."
-    cp /app/presentation.pdf "${STORAGE_DIR}/data/presentation.pdf"
-fi
-
 # ── 1. Wait for Ollama service to be ready ─────────────────────────────────
 echo "Waiting for Ollama to be ready..."
 for i in $(seq 1 40); do
