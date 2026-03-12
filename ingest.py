@@ -21,6 +21,9 @@ SCRAPED_FILE = os.path.join(_STORAGE, "data", "scraped_content.json")
 PDF_FILE = os.path.join(_STORAGE, "data", "presentation.pdf")
 VECTORSTORE_DIR = os.path.join(_STORAGE, "vectorstore")
 
+from langchain_core.documents import Document
+from langchain_ollama import OllamaEmbeddings
+from langchain_chroma import Chroma
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 

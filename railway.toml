@@ -6,7 +6,7 @@ dockerfilePath = "Dockerfile.railway"
 # Railway sets PORT automatically — server.py reads it
 # Healthcheck hits / once the server is up
 healthcheckPath = "/"
-# Allow up to 10 minutes for first-time model download + ingestion
-healthcheckTimeout = 600
+# Allow up to 15 minutes for first-time model download + ingestion
+healthcheckTimeout = 900
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
