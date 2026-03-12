@@ -1,11 +1,12 @@
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile"
+dockerfilePath = "Dockerfile.railway"
 
 [deploy]
-# Server starts immediately so healthcheck passes fast.
-# 30 min window covers model download + scraping + ingest on first boot.
+# Railway sets PORT automatically — server.py reads it
+# Healthcheck hits / once the server is up
 healthcheckPath = "/"
-healthcheckTimeout = 1800
+# Allow up to 10 minutes for first-time model download + ingestion
+healthcheckTimeout = 600
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3

@@ -5,10 +5,13 @@ Usage: python server.py
 Playground UI: http://localhost:8000/chat/playground
 """
 
+from dotenv import load_dotenv
+load_dotenv()
+
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from langserve import add_routes
-import os
 
 from chain import create_rag_chain
 
@@ -54,7 +57,7 @@ if __name__ == "__main__":
     import uvicorn
 
     port = int(os.environ.get("PORT", 8000))
-    print("Starting Promtior RAG Chatbot server...")
+    print(f"Starting Promtior RAG Chatbot server on port {port}...")
     print(f"  Playground → http://localhost:{port}/chat/playground")
     print(f"  API docs   → http://localhost:{port}/docs")
     uvicorn.run(app, host="0.0.0.0", port=port)

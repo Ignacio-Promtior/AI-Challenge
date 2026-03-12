@@ -5,20 +5,18 @@ Builds the RAG chain used by the LangServe server.
 
 import os
 
-os.environ.setdefault("ANONYMIZED_TELEMETRY", "false")
-
 from langchain_ollama import OllamaEmbeddings, OllamaLLM
 from langchain_chroma import Chroma
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 
-VECTORSTORE_DIR = "./vectorstore"
 OLLAMA_MODEL = "llama2"
 EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "nomic-embed-text")
-# When running inside Docker, Ollama is a separate service on the same network.
-# The OLLAMA_BASE_URL env var is set in docker-compose.yml.
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
+# STORAGE_DIR: '.' locally, '/app/storage' on Railway (set via env var)
+_STORAGE = os.environ.get("STORAGE_DIR", ".")
+VECTORSTORE_DIR = os.path.join(_STORAGE, "vectorstore")
 
 PROMPT_TEMPLATE = """You are a concise and professional assistant for Promtior, \
 an AI consultancy specialised in Generative AI and RAG solutions.

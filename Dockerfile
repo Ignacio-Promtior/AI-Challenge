@@ -18,9 +18,8 @@ COPY scraper.py ingest.py chain.py server.py entrypoint.sh ./
 # Make entrypoint executable
 RUN chmod +x entrypoint.sh
 
-# Default env vars — work for both Railway (single container) and local override via docker-compose
-ENV OLLAMA_BASE_URL=http://ollama.railway.internal:11434
-ENV EMBEDDING_MODEL=nomic-embed-text
+# Persistent volumes will be mounted here at runtime
+VOLUME ["/app/data", "/app/vectorstore"]
 
 EXPOSE 8000
 

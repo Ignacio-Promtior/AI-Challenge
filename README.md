@@ -4,14 +4,6 @@ A **Retrieval-Augmented Generation (RAG)** chatbot that answers questions about 
 
 ---
 
-## 📄 Challenge Documentation
-
-> The documentation required by the challenge — including the development process, technical decisions, and component diagram — is located in the [`docs/`](docs/) folder.
-
----
-
----
-
 ## Architecture
 
 ```
@@ -24,7 +16,7 @@ A **Retrieval-Augmented Generation (RAG)** chatbot that answers questions about 
 └─────────────────┘    └──────────────────┘    └─────────────────┘
                                ▲                        │
                        OllamaEmbeddings          Ollama LLaMA 2
-                       (nomic-embed-text)         retriever + LLM
+                       (LLaMA 2)                 retriever + LLM
 ```
 
 ## Files
@@ -79,16 +71,15 @@ Data is persisted in `./data/`, `./vectorstore/`, and the `ollama_data` Docker v
 
 ### 1. Python 3.10+
 
-### 2. Ollama with LLaMA 2 and nomic-embed-text
+### 2. Ollama with LLaMA 2
 
-Install [Ollama](https://ollama.com) and pull both required models:
+Install [Ollama](https://ollama.com) and pull the model:
 
 ```bash
 ollama pull llama2
-ollama pull nomic-embed-text
 ```
 
-Confirm the LLM runs:
+Confirm it runs:
 
 ```bash
 ollama run llama2
@@ -141,7 +132,7 @@ This chunks all documents, generates embeddings with Ollama, and persists a Chro
 python server.py
 ```
 
-The API is now live at **http://localhost:8000** (local) or your Railway-provided URL when deployed.
+The API is now live at **http://localhost:8000**.
 
 | Endpoint | Description |
 |----------|-------------|
@@ -154,23 +145,21 @@ The API is now live at **http://localhost:8000** (local) or your Railway-provide
 
 ## Usage examples
 
-> Replace `<BASE_URL>` with `http://localhost:8000` when running locally, or with your Railway-provided URL when deployed (e.g. `https://your-app.up.railway.app`).
-
 ### Interactive playground (recommended)
 
 Open your browser at:  
-**`<BASE_URL>`/chat/playground**
+**http://localhost:8000/chat/playground**
 
 ### cURL
 
 ```bash
-curl -X POST <BASE_URL>/chat/invoke \
+curl -X POST http://localhost:8000/chat/invoke \
   -H "Content-Type: application/json" \
   -d '{"input": "What services does Promtior offer?"}'
 ```
 
 ```bash
-curl -X POST <BASE_URL>/chat/invoke \
+curl -X POST http://localhost:8000/chat/invoke \
   -H "Content-Type: application/json" \
   -d '{"input": "When was Promtior founded?"}'
 ```
@@ -180,10 +169,8 @@ curl -X POST <BASE_URL>/chat/invoke \
 ```python
 import requests
 
-BASE_URL = "http://localhost:8000"  # replace with Railway URL when deployed
-
 response = requests.post(
-    f"{BASE_URL}/chat/invoke",
+    "http://localhost:8000/chat/invoke",
     json={"input": "What services does Promtior offer?"},
 )
 print(response.json()["output"])
@@ -193,7 +180,7 @@ print(response.json()["output"])
 
 ## Design decisions
 
-- **LLM & Embeddings:** Two separate Ollama models — `nomic-embed-text` for embeddings (fast, 274 MB, 768-dim vectors) and `LLaMA 2 (7B)` for generation (3.5 GB). Running locally, no API key required. The embedding model is controlled by the `EMBEDDING_MODEL` environment variable.
+- **LLM & Embeddings:** Ollama + LLaMA 2 (local, no API key required). Swap `OLLAMA_MODEL` in `chain.py` and `ingest.py` to `nomic-embed-text` for better embedding quality.
 - **Vector store:** ChromaDB (persistent, no external service needed).
 - **Chunking:** `RecursiveCharacterTextSplitter` with 1 000-token chunks and 150-token overlap to preserve context across chunk boundaries.
 - **Retrieval:** Top-5 most similar chunks are injected into the prompt.

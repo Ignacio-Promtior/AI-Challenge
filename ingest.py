@@ -9,22 +9,19 @@ import json
 import os
 from pathlib import Path
 
-os.environ.setdefault("ANONYMIZED_TELEMETRY", "false")
+from dotenv import load_dotenv
+load_dotenv()
 
 # When running inside Docker, Ollama is a separate service on the same network.
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
-# Use a dedicated embedding model — much faster than llama2 for this task.
 EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "nomic-embed-text")
+# STORAGE_DIR: '.' locally, '/app/storage' on Railway (set via env var)
+_STORAGE = os.environ.get("STORAGE_DIR", ".")
+SCRAPED_FILE = os.path.join(_STORAGE, "data", "scraped_content.json")
+PDF_FILE = os.path.join(_STORAGE, "data", "presentation.pdf")
+VECTORSTORE_DIR = os.path.join(_STORAGE, "vectorstore")
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_ollama import OllamaEmbeddings
-from langchain_chroma import Chroma
-from langchain_core.documents import Document
-
-SCRAPED_FILE = "data/scraped_content.json"
-PDF_FILE = "data/presentation.pdf"   # optional – place the Promtior PDF here
-VECTORSTORE_DIR = "./vectorstore"
-OLLAMA_MODEL = "llama2"  # used for embeddings; switch to nomic-embed-text if available
 
 
 # ---------------------------------------------------------------------------
@@ -97,6 +94,7 @@ def ingest():
         embedding=embeddings,
         persist_directory=VECTORSTORE_DIR,
     )
+
     print(f"\nVector store saved to '{VECTORSTORE_DIR}'. Ingestion complete.")
 
 
