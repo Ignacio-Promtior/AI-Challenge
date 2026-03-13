@@ -24,11 +24,11 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Allow all origins for local development — restrict in production
+# Allow all origins — no credentials needed for a public chatbot API
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

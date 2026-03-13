@@ -7,9 +7,14 @@ Usage: python ingest.py
 
 import json
 import os
-from pathlib import Path
 
 from dotenv import load_dotenv
+from langchain_chroma import Chroma
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_core.documents import Document
+from langchain_ollama import OllamaEmbeddings
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
 load_dotenv()
 
 # When running inside Docker, Ollama is a separate service on the same network.
@@ -20,11 +25,6 @@ _STORAGE = os.environ.get("STORAGE_DIR", ".")
 SCRAPED_FILE = os.path.join(_STORAGE, "data", "scraped_content.json")
 PDF_FILE = os.path.join(_STORAGE, "data", "presentation.pdf")
 VECTORSTORE_DIR = os.path.join(_STORAGE, "vectorstore")
-
-from langchain_core.documents import Document
-from langchain_ollama import OllamaEmbeddings
-from langchain_chroma import Chroma
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
 # ---------------------------------------------------------------------------
@@ -42,7 +42,6 @@ def load_scraped_json(path: str) -> list[Document]:
 
 
 def load_pdf(path: str) -> list[Document]:
-    from langchain_community.document_loaders import PyPDFLoader
     loader = PyPDFLoader(path)
     return loader.load()
 

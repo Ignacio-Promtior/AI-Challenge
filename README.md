@@ -16,8 +16,14 @@ A **Retrieval-Augmented Generation (RAG)** chatbot that answers questions about 
 └─────────────────┘    └──────────────────┘    └─────────────────┘
                                ▲                        │
                        OllamaEmbeddings          Ollama LLaMA 2
-                       (LLaMA 2)                 retriever + LLM
+                       (nomic-embed-text)         generative LLM
 ```
+
+### Deployment architecture
+
+**Local (Docker Compose):** two containers on the same Docker network — `promtior_app` + `promtior_ollama`.
+
+**Production (Railway):** two independent Railway services communicating over the private network — one running the official `ollama/ollama` image, the other built from `Dockerfile.railway`.
 
 ## Files
 
@@ -27,9 +33,12 @@ A **Retrieval-Augmented Generation (RAG)** chatbot that answers questions about 
 | `ingest.py` | Loads scraped content (+ optional PDF), chunks it, and builds the ChromaDB vector store |
 | `chain.py` | Defines the LangChain RAG chain (retriever → prompt → LLM) |
 | `server.py` | Starts the LangServe FastAPI server |
-| `Dockerfile` | Builds the chatbot application image |
-| `docker-compose.yml` | Orchestrates the app + Ollama containers |
-| `entrypoint.sh` | Container startup script (waits for Ollama, pulls model, scrapes, ingests, serves) |
+| `Dockerfile` | Builds the chatbot application image (local Docker) |
+| `docker-compose.yml` | Orchestrates the app + Ollama containers locally |
+| `entrypoint.sh` | Local container startup script (waits for Ollama, pulls models, scrapes, ingests, serves) |
+| `Dockerfile.railway` | Builds the app image for Railway (no Ollama binary) |
+| `entrypoint.railway.sh` | Railway startup script (connects to external Ollama service) |
+| `railway.toml` | Railway build & deploy configuration |
 | `requirements.txt` | Python dependencies |
 
 ---
@@ -54,6 +63,8 @@ That single command will:
 > **GPU acceleration (NVIDIA):** Uncomment the `deploy` block in `docker-compose.yml` to enable GPU support (requires [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)).
 
 > **Optional PDF:** Place the Promtior presentation at `data/presentation.pdf` before the first run.
+
+> **PDF on Railway:** The `data/presentation.pdf` is not baked into the Railway image. To include it in a Railway deployment, upload the file manually to the persistent volume at `/app/storage/data/presentation.pdf` before the first startup.
 
 ### Stopping the stack
 
@@ -180,8 +191,9 @@ print(response.json()["output"])
 
 ## Design decisions
 
-- **LLM & Embeddings:** Ollama + LLaMA 2 (local, no API key required). Swap `OLLAMA_MODEL` in `chain.py` and `ingest.py` to `nomic-embed-text` for better embedding quality.
-- **Vector store:** ChromaDB (persistent, no external service needed).
-- **Chunking:** `RecursiveCharacterTextSplitter` with 1 000-token chunks and 150-token overlap to preserve context across chunk boundaries.
+- **Embeddings:** `nomic-embed-text` via Ollama — specialized for plain text, ~15x faster than using LLaMA 2 for embeddings (~2s vs ~30s per chunk).
+- **LLM:** LLaMA 2 via Ollama (local, no API key required). Configured in `chain.py` via `OLLAMA_MODEL`.
+- **Vector store:** ChromaDB (persistent on disk — vectorstore is not rebuilt on restarts if the directory already exists).
+- **Chunking:** `RecursiveCharacterTextSplitter` with 1 000-character chunks and 150-character overlap to preserve context across chunk boundaries.
 - **Retrieval:** Top-5 most similar chunks are injected into the prompt.
-- **Sources:** The model cites the URL of each retrieved chunk so answers are traceable.
+- **Sources:** Each retrieved chunk carries its origin URL in the metadata, making answers traceable.

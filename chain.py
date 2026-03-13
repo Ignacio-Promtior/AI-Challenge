@@ -11,7 +11,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 
-OLLAMA_MODEL = "llama2"
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "llama2")
 EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "nomic-embed-text")
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 # STORAGE_DIR: '.' locally, '/app/storage' on Railway (set via env var)
