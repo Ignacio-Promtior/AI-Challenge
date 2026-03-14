@@ -14,6 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application source
 COPY scraper.py ingest.py chain.py server.py entrypoint.sh ./
+COPY frontend/ ./frontend/
 
 # Make entrypoint executable
 RUN chmod +x entrypoint.sh

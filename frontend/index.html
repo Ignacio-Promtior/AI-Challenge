@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Promtior RAG Chatbot</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f1117;
+      color: #e1e4e8;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      width: 100%;
+      padding: 16px 24px;
+      border-bottom: 1px solid #21262d;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #161b22;
+    }
+
+    header .logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #7c3aed, #2563eb);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    header h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #f0f6fc;
+    }
+
+    header span {
+      font-size: 12px;
+      color: #8b949e;
+      margin-left: auto;
+    }
+
+    #chat-container {
+      flex: 1;
+      width: 100%;
+      max-width: 760px;
+      overflow-y: auto;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-width: 88%;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; } }
+
+    .message.user { align-self: flex-end; align-items: flex-end; }
+    .message.assistant { align-self: flex-start; align-items: flex-start; }
+
+    .bubble {
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .message.user .bubble {
+      background: #2563eb;
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.assistant .bubble {
+      background: #21262d;
+      color: #e1e4e8;
+      border-bottom-left-radius: 4px;
+      border: 1px solid #30363d;
+    }
+
+    .message.error .bubble {
+      background: #3d1a1a;
+      color: #f88;
+      border: 1px solid #6b2c2c;
+    }
+
+    .label {
+      font-size: 11px;
+      color: #8b949e;
+      padding: 0 4px;
+    }
+
+    /* Typing indicator */
+    .typing .bubble {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      padding: 14px 18px;
+    }
+
+    .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #8b949e;
+      animation: bounce 1.2s infinite;
+    }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+      30% { transform: translateY(-5px); opacity: 1; }
+    }
+
+    /* Empty state */
+    #empty-state {
+      margin: auto;
+      text-align: center;
+      color: #8b949e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    #empty-state .icon {
+      font-size: 48px;
+      filter: grayscale(0.3);
+    }
+
+    #empty-state h2 { font-size: 20px; color: #c9d1d9; }
+    #empty-state p  { font-size: 14px; max-width: 380px; }
+
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    .suggestion {
+      background: #21262d;
+      border: 1px solid #30363d;
+      color: #c9d1d9;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .suggestion:hover { background: #2d333b; border-color: #8b949e; }
+
+    /* Input bar */
+    #input-bar {
+      width: 100%;
+      max-width: 760px;
+      padding: 16px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    #input-bar textarea {
+      flex: 1;
+      resize: none;
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      color: #e1e4e8;
+      font-size: 14px;
+      font-family: inherit;
+      padding: 12px 14px;
+      outline: none;
+      min-height: 44px;
+      max-height: 180px;
+      overflow-y: auto;
+      transition: border-color 0.15s;
+      line-height: 1.5;
+    }
+
+    #input-bar textarea:focus { border-color: #2563eb; }
+    #input-bar textarea::placeholder { color: #6e7681; }
+
+    #send-btn {
+      background: #2563eb;
+      border: none;
+      border-radius: 10px;
+      width: 44px;
+      height: 44px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.15s, opacity 0.15s;
+    }
+
+    #send-btn:hover:not(:disabled) { background: #1d4ed8; }
+    #send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    #send-btn svg { width: 18px; height: 18px; fill: #fff; }
+
+    footer {
+      padding: 8px 16px 12px;
+      font-size: 11px;
+      color: #6e7681;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🤖</div>
+  <h1>Promtior RAG Chatbot</h1>
+  <span>Powered by LLaMA 3.2 1B + ChromaDB</span>
+</header>
+
+<div id="chat-container">
+  <div id="empty-state">
+    <div class="icon">💬</div>
+    <h2>Ask me about Promtior</h2>
+    <p>I can answer questions about Promtior's services, team, and solutions using content from their website.</p>
+    <div class="suggestions">
+      <button class="suggestion">What services does Promtior offer?</button>
+      <button class="suggestion">When was Promtior founded?</button>
+      <button class="suggestion">What is RAG?</button>
+      <button class="suggestion">Who is the Promtior team?</button>
+    </div>
+  </div>
+</div>
+
+<div id="input-bar">
+  <textarea id="user-input" placeholder="Ask something about Promtior…" rows="1"></textarea>
+  <button id="send-btn" title="Send">
+    <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+  </button>
+</div>
+
+<footer>Make sure the server is running on <strong>http://localhost:8000</strong></footer>
+
+<script>
+  // Local dev: served by `python -m http.server 3000` → call the FastAPI server directly.
+  // Production (Railway / Docker): served by FastAPI itself → use a relative path.
+  const API_URL = (window.location.hostname === "localhost" && window.location.port === "3000")
+    ? "http://localhost:8000/chat/invoke"
+    : "/chat/invoke";
+
+  const chatContainer = document.getElementById("chat-container");
+  const emptyState    = document.getElementById("empty-state");
+  const textarea      = document.getElementById("user-input");
+  const sendBtn       = document.getElementById("send-btn");
+
+  // ── Auto-resize textarea ──────────────────────────────────────────────────
+  textarea.addEventListener("input", () => {
+    textarea.style.height = "auto";
+    textarea.style.height = Math.min(textarea.scrollHeight, 180) + "px";
+  });
+
+  // ── Suggestion chips ──────────────────────────────────────────────────────
+  document.querySelectorAll(".suggestion").forEach(btn => {
+    btn.addEventListener("click", () => {
+      textarea.value = btn.textContent;
+      textarea.dispatchEvent(new Event("input"));
+      sendMessage();
+    });
+  });
+
+  // ── Enter to send (Shift+Enter = newline) ─────────────────────────────────
+  textarea.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  sendBtn.addEventListener("click", sendMessage);
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  function appendMessage(role, text) {
+    const wrap = document.createElement("div");
+    wrap.className = `message ${role}`;
+
+    const label  = document.createElement("div");
+    label.className = "label";
+    label.textContent = role === "user" ? "You" : "Promtior Assistant";
+
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.textContent = text;
+
+    wrap.appendChild(label);
+    wrap.appendChild(bubble);
+    chatContainer.appendChild(wrap);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    return wrap;
+  }
+
+  function showTyping() {
+    const wrap = document.createElement("div");
+    wrap.className = "message assistant typing";
+    wrap.innerHTML = `
+      <div class="label">Promtior Assistant</div>
+      <div class="bubble">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>`;
+    chatContainer.appendChild(wrap);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    return wrap;
+  }
+
+  // ── Main send logic ───────────────────────────────────────────────────────
+  async function sendMessage() {
+    const text = textarea.value.trim();
+    if (!text || sendBtn.disabled) return;
+
+    // Remove empty state on first message
+    if (emptyState) emptyState.remove();
+
+    textarea.value = "";
+    textarea.style.height = "auto";
+    sendBtn.disabled = true;
+
+    appendMessage("user", text);
+    const typingEl = showTyping();
+
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input: text }),
+      });
+
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+
+      const data = await res.json();
+      const answer = data?.output ?? data?.result ?? JSON.stringify(data);
+
+      typingEl.remove();
+      appendMessage("assistant", answer);
+    } catch (err) {
+      typingEl.remove();
+      appendMessage("error", `Error: ${err.message}. Is the server running on http://localhost:8000?`);
+    } finally {
+      sendBtn.disabled = false;
+      textarea.focus();
+    }
+  }
+</script>
+</body>
+</html>

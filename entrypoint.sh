@@ -2,7 +2,7 @@
 set -e
 
 OLLAMA_BASE_URL="${OLLAMA_BASE_URL:-http://localhost:11434}"
-MODEL="llama2"
+MODEL="llama3.2:1b"
 EMBEDDING_MODEL="nomic-embed-text"
 
 echo "=== Promtior RAG Chatbot entrypoint ==="

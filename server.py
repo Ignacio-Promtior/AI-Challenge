@@ -11,6 +11,7 @@ load_dotenv()
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from langserve import add_routes
 
 from chain import create_rag_chain
@@ -50,7 +51,13 @@ async def root():
         "docs": "/docs",
         "chat_endpoint": "/chat/invoke",
         "playground": "/chat/playground",
+        "ui": "/ui",
     }
+
+
+# Serve the static frontend — must be mounted AFTER all API routes
+if os.path.isdir("frontend"):
+    app.mount("/ui", StaticFiles(directory="frontend", html=True), name="frontend")
 
 
 if __name__ == "__main__":
