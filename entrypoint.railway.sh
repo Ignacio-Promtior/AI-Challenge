@@ -36,8 +36,7 @@ done
 # ── 2. Pull required models if not already cached in Ollama service ────────
 for PULL_MODEL in "${LLM_MODEL}" "${EMBEDDING_MODEL}"; do
     echo "Checking model '${PULL_MODEL}'..."
-    if curl -sf "${OLLAMA_BASE_URL}/api/tags" | grep -q "\"${PULL_MODEL}\""; then
-        echo "  Already downloaded."
+    if curl -sf "${OLLAMA_BASE_URL}/api/tags" | grep -q "\"${PULL_MODEL}"; then
     else
         echo "  Pulling '${PULL_MODEL}' — this may take several minutes..."
         curl -s "${OLLAMA_BASE_URL}/api/pull" \
@@ -46,7 +45,7 @@ for PULL_MODEL in "${LLM_MODEL}" "${EMBEDDING_MODEL}"; do
         # Verify the model is actually registered after pull
         echo "  Verifying '${PULL_MODEL}' is available..."
         for j in $(seq 1 10); do
-            if curl -sf "${OLLAMA_BASE_URL}/api/tags" | grep -q "\"${PULL_MODEL}\""; then
+            if curl -sf "${OLLAMA_BASE_URL}/api/tags" | grep -q "\"${PULL_MODEL}"; then
                 echo "  Done."
                 break
             fi

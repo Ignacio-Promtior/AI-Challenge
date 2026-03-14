@@ -26,7 +26,7 @@ done
 # ── 2. Pull required models if not already present ─────────────────────────
 for PULL_MODEL in "${MODEL}" "${EMBEDDING_MODEL}"; do
     echo "Checking if model '${PULL_MODEL}' is available..."
-    if curl -sf "${OLLAMA_BASE_URL}/api/tags" | grep -q "\"${PULL_MODEL}\""; then
+    if curl -sf "${OLLAMA_BASE_URL}/api/tags" | grep -q "\"${PULL_MODEL}"; then
         echo "Model '${PULL_MODEL}' already downloaded."
     else
         echo "Pulling model '${PULL_MODEL}' — this may take several minutes..."
