@@ -43,7 +43,20 @@ for PULL_MODEL in "${LLM_MODEL}" "${EMBEDDING_MODEL}"; do
         curl -s "${OLLAMA_BASE_URL}/api/pull" \
             -d "{\"name\": \"${PULL_MODEL}\"}" \
             -H "Content-Type: application/json" | tail -1
-        echo "  Done."
+        # Verify the model is actually registered after pull
+        echo "  Verifying '${PULL_MODEL}' is available..."
+        for j in $(seq 1 10); do
+            if curl -sf "${OLLAMA_BASE_URL}/api/tags" | grep -q "\"${PULL_MODEL}\""; then
+                echo "  Done."
+                break
+            fi
+            echo "  Model not yet visible, waiting 3s... ($j/10)"
+            sleep 3
+            if [ "$j" -eq 10 ]; then
+                echo "ERROR: Model '${PULL_MODEL}' not available after pull. Exiting."
+                exit 1
+            fi
+        done
     fi
 done
 

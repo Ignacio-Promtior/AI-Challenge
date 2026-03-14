@@ -257,14 +257,18 @@
   </button>
 </div>
 
-<footer>Make sure the server is running on <strong>http://localhost:8000</strong></footer>
+<footer id="footer-hint"></footer>
 
 <script>
   // Local dev: served by `python -m http.server 3000` → call the FastAPI server directly.
   // Production (Railway / Docker): served by FastAPI itself → use a relative path.
-  const API_URL = (window.location.hostname === "localhost" && window.location.port === "3000")
+  const IS_LOCAL_DEV = window.location.hostname === "localhost" && window.location.port === "3000";
+  const API_URL = IS_LOCAL_DEV
     ? "http://localhost:8000/chat/invoke"
     : "/chat/invoke";
+  const SERVER_LABEL = IS_LOCAL_DEV ? "http://localhost:8000" : window.location.origin;
+  document.getElementById("footer-hint").innerHTML =
+    `Make sure the server is running on <strong>${SERVER_LABEL}</strong>`;
 
   const chatContainer = document.getElementById("chat-container");
   const emptyState    = document.getElementById("empty-state");
@@ -360,7 +364,7 @@
       appendMessage("assistant", answer);
     } catch (err) {
       typingEl.remove();
-      appendMessage("error", `Error: ${err.message}. Is the server running on http://localhost:8000?`);
+      appendMessage("error", `Error: ${err.message}. Is the server running on ${SERVER_LABEL}?`);
     } finally {
       sendBtn.disabled = false;
       textarea.focus();
