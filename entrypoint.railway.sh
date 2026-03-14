@@ -37,6 +37,7 @@ done
 for PULL_MODEL in "${LLM_MODEL}" "${EMBEDDING_MODEL}"; do
     echo "Checking model '${PULL_MODEL}'..."
     if curl -sf "${OLLAMA_BASE_URL}/api/tags" | grep -q "\"${PULL_MODEL}"; then
+        echo "  Already downloaded."
     else
         echo "  Pulling '${PULL_MODEL}' — this may take several minutes..."
         curl -s "${OLLAMA_BASE_URL}/api/pull" \
