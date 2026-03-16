@@ -25,6 +25,8 @@ A **Retrieval-Augmented Generation (RAG)** chatbot that answers questions about 
 
 **Production (Railway):** two independent Railway services communicating over the private network — one running the official `ollama/ollama` image, the other built from `Dockerfile.railway`.
 
+> **Live demo:** [https://ai-challenge-production-b6b2.up.railway.app/ui/](https://ai-challenge-production-b6b2.up.railway.app/ui/)
+
 ## Files
 
 | File | Purpose |
