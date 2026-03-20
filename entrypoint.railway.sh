@@ -9,7 +9,7 @@ export EMBEDDING_MODEL="${EMBEDDING_MODEL:-nomic-embed-text}"
 # Single volume mounted at /app/storage on Railway
 export STORAGE_DIR="/app/storage"
 
-LLM_MODEL="${OLLAMA_MODEL:-llama3.1:8b}"
+LLM_MODEL="${OLLAMA_MODEL:-llama3.2:3b}"
 
 echo "=== Promtior RAG Chatbot (Railway) ==="
 echo "  PORT            : $PORT"
@@ -39,21 +39,22 @@ for PULL_MODEL in "${LLM_MODEL}" "${EMBEDDING_MODEL}"; do
     if curl -sf "${OLLAMA_BASE_URL}/api/tags" | grep -q "\"${PULL_MODEL}"; then
         echo "  Already downloaded."
     else
-        echo "  Pulling '${PULL_MODEL}' — this may take several minutes..."
+        echo "  Pulling '${PULL_MODEL}' in background — this may take several minutes..."
         curl -s --max-time 1800 "${OLLAMA_BASE_URL}/api/pull" \
             -d "{\"name\": \"${PULL_MODEL}\"}" \
-            -H "Content-Type: application/json" | tail -1
-        # Verify the model is actually registered after pull
-        echo "  Verifying '${PULL_MODEL}' is available..."
-        for j in $(seq 1 60); do
+            -H "Content-Type: application/json" \
+            --no-buffer > /dev/null &
+        # Poll until the model appears in /api/tags (up to 20 minutes)
+        echo "  Waiting for '${PULL_MODEL}' to be available..."
+        for j in $(seq 1 80); do
             if curl -sf "${OLLAMA_BASE_URL}/api/tags" | grep -q "\"${PULL_MODEL}"; then
                 echo "  Done."
                 break
             fi
-            echo "  Model not yet visible, waiting 15s... ($j/60)"
+            echo "  Waiting... ($j/80, $(( j * 15 ))s elapsed)"
             sleep 15
-            if [ "$j" -eq 60 ]; then
-                echo "ERROR: Model '${PULL_MODEL}' not available after pull. Exiting."
+            if [ "$j" -eq 80 ]; then
+                echo "ERROR: Model '${PULL_MODEL}' not available after 20 minutes. Exiting."
                 exit 1
             fi
         done
