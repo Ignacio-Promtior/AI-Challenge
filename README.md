@@ -1,6 +1,6 @@
 # AI-Challenge — Promtior RAG Chatbot
 
-A **Retrieval-Augmented Generation (RAG)** chatbot that answers questions about the [Promtior](https://www.promtior.ai) website, built with **LangChain + LangServe + Ollama (LLaMA 3.2 1B)**.
+A **Retrieval-Augmented Generation (RAG)** chatbot that answers questions about the [Promtior](https://www.promtior.ai) website, built with **LangChain + LangServe + Ollama (LLaMA 3.1 8B)**.
 
 ---
 
@@ -15,7 +15,7 @@ A **Retrieval-Augmented Generation (RAG)** chatbot that answers questions about 
 │ → JSON file     │    │ → ChromaDB       │    │ /chat/playground│
 └─────────────────┘    └──────────────────┘    └─────────────────┘
                                ▲                        │
-                       OllamaEmbeddings          Ollama LLaMA 3.2 1B
+                       OllamaEmbeddings          Ollama LLaMA 3.1 8B
                        (nomic-embed-text)         generative LLM
 ```
 
@@ -58,7 +58,7 @@ That single command will:
 1. Build the chatbot image
 2. Start the Ollama service
 3. Wait for Ollama to be ready
-4. Pull the LLaMA 3.2 1B model (first run only — ~1.3 GB)
+4. Pull the LLaMA 3.1 8B model (first run only — ~4.7 GB)
 5. Scrape the Promtior website (first run only)
 6. Build the ChromaDB vector store (first run only)
 7. Start the LangServe API at **http://localhost:8000**
@@ -85,18 +85,18 @@ Data is persisted in `./data/`, `./vectorstore/`, and the `ollama_data` Docker v
 
 ### 1. Python 3.10+
 
-### 2. Ollama with LLaMA 3.2 1B
+### 2. Ollama with LLaMA 3.1 8B
 
 Install [Ollama](https://ollama.com) and pull the model:
 
 ```bash
-ollama pull llama3.2:1b
+ollama pull llama3.1:8b
 ```
 
 Confirm it runs:
 
 ```bash
-ollama run llama3.2:1b
+ollama run llama3.1:8b
 ```
 
 ---
@@ -196,7 +196,7 @@ print(response.json()["output"])
 ## Design decisions
 
 - **Embeddings:** `nomic-embed-text` via Ollama — specialized for plain text, ~15x faster than using the generative LLM for embeddings (~2s vs ~30s per chunk).
-- **LLM:** LLaMA 3.2 1B via Ollama (local, no API key required). Configured in `chain.py` via `OLLAMA_MODEL`.
+- **LLM:** LLaMA 3.1 8B via Ollama (local, no API key required). Configured in `chain.py` via `OLLAMA_MODEL`.
 - **Vector store:** ChromaDB (persistent on disk — vectorstore is not rebuilt on restarts if the directory already exists).
 - **Chunking:** `RecursiveCharacterTextSplitter` with 1 000-character chunks and 150-character overlap to preserve context across chunk boundaries.
 - **Retrieval:** Top-5 most similar chunks are injected into the prompt.

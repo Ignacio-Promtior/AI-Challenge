@@ -9,7 +9,7 @@ export EMBEDDING_MODEL="${EMBEDDING_MODEL:-nomic-embed-text}"
 # Single volume mounted at /app/storage on Railway
 export STORAGE_DIR="/app/storage"
 
-LLM_MODEL="llama3.2:1b"
+LLM_MODEL="${OLLAMA_MODEL:-llama3.1:8b}"
 
 echo "=== Promtior RAG Chatbot (Railway) ==="
 echo "  PORT            : $PORT"
